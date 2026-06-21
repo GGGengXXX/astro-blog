@@ -1,0 +1,19 @@
+---
+import AboutHeroImage from '../assets/blog-placeholder-about.jpg';
+import Layout from '../layouts/BlogPost.astro';
+---
+
+<Layout
+	title="About Me"
+	description="About GGGengXXX"
+	pubDate={new Date('June 21 2026')}
+	heroImage={AboutHeroImage}
+>
+	<p>
+		这里是 GGGengXXX 的个人博客。你可以把这页改成自己的介绍、项目入口、联系方式，或者一份更完整的个人主页。
+	</p>
+
+	<p>
+		这个站点已经配置了 GitHub Pages 自动部署：推送到 <code>main</code> 分支后，GitHub Actions 会构建并发布到 Pages。
+	</p>
+</Layout>
