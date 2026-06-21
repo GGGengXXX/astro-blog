@@ -35,6 +35,18 @@ const { title, description, image = FallbackImage } = Astro.props;
 	href={new URL('rss.xml', siteWithBase)}
 />
 <meta name="generator" content={Astro.generator} />
+<script is:inline>
+	(() => {
+		const savedTheme = localStorage.getItem('site-theme');
+		const savedLang = localStorage.getItem('site-lang');
+		const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+		const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+		const lang = savedLang || 'zh';
+		document.documentElement.dataset.theme = theme;
+		document.documentElement.dataset.lang = lang;
+		document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN';
+	})();
+</script>
 
 <Font cssVariable="--font-atkinson" preload />
 

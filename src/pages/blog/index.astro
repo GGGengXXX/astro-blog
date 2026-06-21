@@ -11,10 +11,37 @@ const posts = (await getCollection('blog')).sort(
 );
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const categoryLabels = {
-	note: '笔记',
-	diary: '日记',
-	idea: '想法',
-	essay: '文章',
+	note: { zh: '笔记', en: 'Notes' },
+	diary: { zh: '日记', en: 'Diary' },
+	idea: { zh: '想法', en: 'Ideas' },
+	essay: { zh: '文章', en: 'Essays' },
+};
+const postText = {
+	'first-post': {
+		title: 'Today I set up the blog first',
+		description: 'An opening diary: build the container first, then let real life move in.',
+		tags: ['Diary', 'Blog', 'Start'],
+	},
+	'second-post': {
+		title: 'Astro blog maintenance checklist',
+		description: 'A future note for adding posts, editing the homepage, deploying, and debugging.',
+		tags: ['Astro', 'GitHub Pages', 'Notes'],
+	},
+	'third-post': {
+		title: 'Idea: write diary entries like experiments',
+		description: 'A diary can record hypotheses, observations, and the next small test.',
+		tags: ['Writing', 'Method', 'Idea'],
+	},
+	'markdown-style-guide': {
+		title: 'Markdown writing style notes',
+		description: 'A short memo for common Markdown patterns used in this blog.',
+		tags: ['Markdown', 'Writing'],
+	},
+	'using-mdx': {
+		title: 'What MDX can be used for',
+		description: 'Put small interactive pieces inside posts so the blog is more than static text.',
+		tags: ['MDX', 'Interactive', 'Astro'],
+	},
 };
 ---
 
@@ -45,8 +72,8 @@ const categoryLabels = {
 				flex-direction: column;
 				justify-content: end;
 				padding: 1.25rem;
-				background: var(--ink);
-				color: var(--paper);
+				background: var(--inverse);
+				color: var(--inverse-text);
 			}
 
 			.archive-stat strong {
@@ -92,7 +119,7 @@ const categoryLabels = {
 
 			.archive-row p {
 				margin: 0;
-				color: #48443b;
+				color: var(--panel-text);
 			}
 
 			.archive-kind {
@@ -116,12 +143,15 @@ const categoryLabels = {
 			<section class="archive-head">
 				<div class="archive-title surface">
 					<div class="eyebrow">Archive</div>
-					<h1>归档</h1>
-					<p>所有笔记、日记、想法和长一点的文章都会在这里排成时间线。它不需要一开始就完整，重要的是能持续加入。</p>
+					<h1><span data-locale="zh">归档</span><span data-locale="en">Archive</span></h1>
+					<p>
+						<span data-locale="zh">所有笔记、日记、想法和长一点的文章都会在这里排成时间线。它不需要一开始就完整，重要的是能持续加入。</span>
+						<span data-locale="en">All notes, diary fragments, ideas, and longer essays are arranged here as a timeline. It does not need to be complete at first; it only needs to keep accepting new entries.</span>
+					</p>
 				</div>
 				<div class="archive-stat surface">
 					<strong>{posts.length}</strong>
-					<span>entries saved</span>
+					<span><span data-locale="zh">条已保存</span><span data-locale="en">entries saved</span></span>
 				</div>
 			</section>
 
@@ -133,15 +163,18 @@ const categoryLabels = {
 								<FormattedDate date={post.data.pubDate} />
 							</div>
 							<div>
-								<h2>{post.data.title}</h2>
-								<p>{post.data.description}</p>
+								<h2><span data-locale="zh">{post.data.title}</span><span data-locale="en">{postText[post.id]?.title ?? post.data.title}</span></h2>
+								<p><span data-locale="zh">{post.data.description}</span><span data-locale="en">{postText[post.id]?.description ?? post.data.description}</span></p>
 								<div class="tag-row">
-									{post.data.tags.map((tag) => (
-										<span class="pill">{tag}</span>
+									{post.data.tags.map((tag, index) => (
+										<span class="pill"><span data-locale="zh">{tag}</span><span data-locale="en">{postText[post.id]?.tags?.[index] ?? tag}</span></span>
 									))}
 								</div>
 							</div>
-							<div class="archive-kind">{categoryLabels[post.data.category]}</div>
+							<div class="archive-kind">
+								<span data-locale="zh">{categoryLabels[post.data.category].zh}</span>
+								<span data-locale="en">{categoryLabels[post.data.category].en}</span>
+							</div>
 						</a>
 					))
 				}

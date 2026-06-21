@@ -1,0 +1,92 @@
+<div class="preference-controls" aria-label="Display preferences">
+	<button class="preference-button" type="button" data-lang-toggle aria-label="Switch language">
+		<span data-locale="zh">EN</span>
+		<span data-locale="en">中</span>
+	</button>
+	<button class="preference-button" type="button" data-theme-toggle aria-label="Switch color theme">
+		<span data-theme-icon="light">◐</span>
+		<span data-theme-icon="dark">◑</span>
+	</button>
+</div>
+
+<script>
+	const root = document.documentElement;
+	const langToggle = document.querySelector('[data-lang-toggle]');
+	const themeToggle = document.querySelector('[data-theme-toggle]');
+
+	const setLang = (lang) => {
+		root.dataset.lang = lang;
+		root.lang = lang === 'en' ? 'en' : 'zh-CN';
+		localStorage.setItem('site-lang', lang);
+	};
+
+	const setTheme = (theme) => {
+		root.dataset.theme = theme;
+		localStorage.setItem('site-theme', theme);
+	};
+
+	langToggle?.addEventListener('click', () => {
+		setLang(root.dataset.lang === 'en' ? 'zh' : 'en');
+	});
+
+	themeToggle?.addEventListener('click', () => {
+		setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
+	});
+</script>
+
+<style>
+	.preference-controls {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+	}
+
+	.preference-button {
+		display: inline-grid;
+		place-items: center;
+		width: 2.45rem;
+		height: 2.45rem;
+		border: 1px solid var(--line);
+		border-radius: 999px;
+		background: var(--panel);
+		color: var(--ink);
+		cursor: pointer;
+		font: inherit;
+		font-size: 0.86rem;
+		font-weight: 700;
+		line-height: 1;
+		transition:
+			transform 0.2s ease,
+			background 0.2s ease,
+			border-color 0.2s ease;
+	}
+
+	.preference-button:hover {
+		transform: translateY(-1px);
+		border-color: var(--red);
+	}
+
+	[data-theme-icon='dark'] {
+		display: none;
+	}
+
+	html[data-theme='dark'] [data-theme-icon='light'] {
+		display: none;
+	}
+
+	html[data-theme='dark'] [data-theme-icon='dark'] {
+		display: inline;
+	}
+
+	@media (max-width: 720px) {
+		.preference-controls {
+			gap: 0.12rem;
+		}
+
+		.preference-button {
+			width: 1.82rem;
+			height: 1.82rem;
+			font-size: 0.72rem;
+		}
+	}
+</style>

@@ -13,11 +13,43 @@ const posts = (await getCollection('blog')).sort(
 const featured = posts.find((post) => post.data.featured) ?? posts[0];
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const categoryLabels = {
-	all: '全部',
-	note: '笔记',
-	diary: '日记',
-	idea: '想法',
-	essay: '文章',
+	all: { zh: '全部', en: 'All' },
+	note: { zh: '笔记', en: 'Notes' },
+	diary: { zh: '日记', en: 'Diary' },
+	idea: { zh: '想法', en: 'Ideas' },
+	essay: { zh: '文章', en: 'Essays' },
+};
+const postText = {
+	'first-post': {
+		title: 'Today I set up the blog first',
+		description: 'An opening diary: build the container first, then let real life move in.',
+		mood: 'Starting',
+		tags: ['Diary', 'Blog', 'Start'],
+	},
+	'second-post': {
+		title: 'Astro blog maintenance checklist',
+		description: 'A future note for adding posts, editing the homepage, deploying, and debugging.',
+		mood: 'Clear',
+		tags: ['Astro', 'GitHub Pages', 'Notes'],
+	},
+	'third-post': {
+		title: 'Idea: write diary entries like experiments',
+		description: 'A diary can record hypotheses, observations, and the next small test.',
+		mood: 'Curious',
+		tags: ['Writing', 'Method', 'Idea'],
+	},
+	'markdown-style-guide': {
+		title: 'Markdown writing style notes',
+		description: 'A short memo for common Markdown patterns used in this blog.',
+		mood: 'Organizing',
+		tags: ['Markdown', 'Writing'],
+	},
+	'using-mdx': {
+		title: 'What MDX can be used for',
+		description: 'Put small interactive pieces inside posts so the blog is more than static text.',
+		mood: 'Experiment',
+		tags: ['MDX', 'Interactive', 'Astro'],
+	},
 };
 ---
 
@@ -44,7 +76,7 @@ const categoryLabels = {
 				flex-direction: column;
 				justify-content: space-between;
 				background:
-					linear-gradient(135deg, rgba(250, 248, 241, 0.92), rgba(239, 232, 213, 0.78)),
+					linear-gradient(135deg, var(--panel-strong), var(--panel)),
 					linear-gradient(90deg, rgba(201, 52, 47, 0.1), transparent);
 				border: 1px solid var(--line);
 				border-radius: 8px;
@@ -58,7 +90,7 @@ const categoryLabels = {
 
 			.hero-lead {
 				max-width: 690px;
-				color: #34312b;
+				color: var(--panel-text);
 				font-size: clamp(1.05rem, 2vw, 1.35rem);
 			}
 
@@ -73,7 +105,7 @@ const categoryLabels = {
 				padding: 0.9rem;
 				border: 1px solid var(--line);
 				border-radius: 6px;
-				background: rgba(250, 248, 241, 0.66);
+				background: var(--panel);
 			}
 
 			.metric strong {
@@ -91,14 +123,14 @@ const categoryLabels = {
 				display: flex;
 				flex-direction: column;
 				justify-content: space-between;
-				background: var(--ink);
+				background: var(--inverse);
 				border-radius: 8px;
-				color: var(--paper);
+				color: var(--inverse-text);
 				box-shadow: var(--shadow);
 			}
 
 			.panel-kicker {
-				color: rgba(250, 248, 241, 0.56);
+				color: var(--inverse-muted);
 				font-size: 0.78rem;
 				font-weight: 700;
 				letter-spacing: 0.14em;
@@ -107,7 +139,7 @@ const categoryLabels = {
 
 			.prompt {
 				margin: 1.5rem 0;
-				color: var(--paper);
+				color: var(--inverse-text);
 				font-size: clamp(1.35rem, 3vw, 2.25rem);
 				line-height: 1.12;
 			}
@@ -164,7 +196,7 @@ const categoryLabels = {
 				gap: 0.5rem;
 				margin: 1rem 0;
 				padding: 0.7rem;
-				background: rgba(250, 248, 241, 0.82);
+				background: var(--panel-strong);
 				border: 1px solid var(--line);
 				border-radius: 8px;
 				backdrop-filter: blur(16px);
@@ -183,7 +215,7 @@ const categoryLabels = {
 
 			.filter-button[aria-pressed='true'] {
 				background: var(--ink);
-				color: var(--paper);
+				color: var(--inverse-text);
 			}
 
 			.garden-grid {
@@ -230,7 +262,7 @@ const categoryLabels = {
 			}
 
 			.entry-card p {
-				color: #45423a;
+				color: var(--panel-text);
 			}
 
 			.entry-card .tag-row {
@@ -259,19 +291,19 @@ const categoryLabels = {
 				grid-template-columns: repeat(2, 1fr);
 				gap: 0.7rem;
 				padding: 1.25rem;
-				background: var(--ink);
-				color: var(--paper);
+				background: var(--inverse);
+				color: var(--inverse-text);
 			}
 
 			.mood-item {
 				padding: 0.8rem;
-				border: 1px solid rgba(250, 248, 241, 0.16);
+				border: 1px solid var(--line);
 				border-radius: 6px;
 			}
 
 			.mood-item span {
 				display: block;
-				color: rgba(250, 248, 241, 0.58);
+				color: var(--inverse-muted);
 				font-size: 0.78rem;
 			}
 
@@ -327,23 +359,27 @@ const categoryLabels = {
 				<div class="hero-copy">
 					<div>
 						<div class="eyebrow">Personal Garden</div>
-						<h1>笔记、日记和想法的工作台</h1>
+						<h1>
+							<span data-locale="zh">笔记、日记和想法的工作台</span>
+							<span data-locale="en">A desk for notes, diary, and ideas</span>
+						</h1>
 						<p class="hero-lead">
-							这里不是一个要一次写完的博客，而是一块可以持续整理的地方。短笔记先放下，日记先留下，想法先不用急着成熟。
+							<span data-locale="zh">这里不是一个要一次写完的博客，而是一块可以持续整理的地方。短笔记先放下，日记先留下，想法先不用急着成熟。</span>
+							<span data-locale="en">This is not a blog that needs to be finished in one pass. It is a place to keep sorting: short notes can land, diary fragments can stay, ideas do not have to mature immediately.</span>
 						</p>
 					</div>
 					<div class="hero-meta">
 						<div class="metric">
 							<strong>{posts.length}</strong>
-							<span>篇记录</span>
+							<span><span data-locale="zh">篇记录</span><span data-locale="en">entries</span></span>
 						</div>
 						<div class="metric">
 							<strong>{posts.filter((post) => post.data.category === 'diary').length}</strong>
-							<span>篇日记</span>
+							<span><span data-locale="zh">篇日记</span><span data-locale="en">diary notes</span></span>
 						</div>
 						<div class="metric">
 							<strong>{new Set(posts.flatMap((post) => post.data.tags)).size}</strong>
-							<span>个标签</span>
+							<span><span data-locale="zh">个标签</span><span data-locale="en">tags</span></span>
 						</div>
 					</div>
 				</div>
@@ -351,9 +387,15 @@ const categoryLabels = {
 				<aside class="control-panel">
 					<div>
 						<div class="panel-kicker">Today's Prompt</div>
-						<p class="prompt" id="promptText">今天最值得留下来的一个细节是什么？</p>
+						<p class="prompt" id="promptText">
+							<span data-locale="zh">今天最值得留下来的一个细节是什么？</span>
+							<span data-locale="en">What detail from today is most worth keeping?</span>
+						</p>
 					</div>
-					<button class="prompt-button" id="promptButton" type="button">换一个写作提示</button>
+					<button class="prompt-button" id="promptButton" type="button">
+						<span data-locale="zh">换一个写作提示</span>
+						<span data-locale="en">New writing prompt</span>
+					</button>
 				</aside>
 			</section>
 
@@ -367,13 +409,28 @@ const categoryLabels = {
 						</div>
 						<div class="featured-body">
 							<div class="eyebrow">Featured</div>
-							<h2>{featured.data.title}</h2>
-							<p>{featured.data.description}</p>
+							<h2>
+								<span data-locale="zh">{featured.data.title}</span>
+								<span data-locale="en">{postText[featured.id]?.title ?? featured.data.title}</span>
+							</h2>
+							<p>
+								<span data-locale="zh">{featured.data.description}</span>
+								<span data-locale="en">{postText[featured.id]?.description ?? featured.data.description}</span>
+							</p>
 							<div class="tag-row">
-								<span class="pill">{categoryLabels[featured.data.category]}</span>
-								{featured.data.mood && <span class="pill">{featured.data.mood}</span>}
+								<span class="pill">
+									<span data-locale="zh">{categoryLabels[featured.data.category].zh}</span>
+									<span data-locale="en">{categoryLabels[featured.data.category].en}</span>
+								</span>
+								{featured.data.mood && (
+									<span class="pill">
+										<span data-locale="zh">{featured.data.mood}</span>
+										<span data-locale="en">{postText[featured.id]?.mood ?? featured.data.mood}</span>
+									</span>
+								)}
 								<a class="pill" href={`${base}/blog/${featured.id}/`}>
-									打开这篇
+									<span data-locale="zh">打开这篇</span>
+									<span data-locale="en">Open entry</span>
 								</a>
 							</div>
 						</div>
@@ -391,27 +448,43 @@ const categoryLabels = {
 								data-filter={key}
 								aria-pressed={key === 'all' ? 'true' : 'false'}
 							>
-								{label}
+								<span data-locale="zh">{label.zh}</span>
+								<span data-locale="en">{label.en}</span>
 							</button>
 						))
 					}
 				</div>
 
 				<div class="eyebrow">Recent Entries</div>
-				<h2 id="garden-title">最近放进来的东西</h2>
+				<h2 id="garden-title">
+					<span data-locale="zh">最近放进来的东西</span>
+					<span data-locale="en">Recent things placed here</span>
+				</h2>
 				<div class="garden-grid" id="gardenGrid">
 					{
 						posts.map((post) => (
 							<a class="entry-card surface" data-category={post.data.category} href={`${base}/blog/${post.id}/`}>
 								<div class="entry-top">
-									<span>{categoryLabels[post.data.category]}</span>
+									<span>
+										<span data-locale="zh">{categoryLabels[post.data.category].zh}</span>
+										<span data-locale="en">{categoryLabels[post.data.category].en}</span>
+									</span>
 									<FormattedDate date={post.data.pubDate} />
 								</div>
-								<h3>{post.data.title}</h3>
-								<p>{post.data.description}</p>
+								<h3>
+									<span data-locale="zh">{post.data.title}</span>
+									<span data-locale="en">{postText[post.id]?.title ?? post.data.title}</span>
+								</h3>
+								<p>
+									<span data-locale="zh">{post.data.description}</span>
+									<span data-locale="en">{postText[post.id]?.description ?? post.data.description}</span>
+								</p>
 								<div class="tag-row">
-									{post.data.tags.slice(0, 3).map((tag) => (
-										<span class="pill">{tag}</span>
+									{post.data.tags.slice(0, 3).map((tag, index) => (
+										<span class="pill">
+											<span data-locale="zh">{tag}</span>
+											<span data-locale="en">{postText[post.id]?.tags?.[index] ?? tag}</span>
+										</span>
 									))}
 								</div>
 							</a>
@@ -422,25 +495,31 @@ const categoryLabels = {
 
 			<section class="diary-strip">
 				<details class="diary-card surface" open>
-					<summary>今天可以怎么写日记</summary>
-					<p>不用写完整文章。只写三个点：发生了什么，我怎么理解它，明天要试什么。</p>
+					<summary>
+						<span data-locale="zh">今天可以怎么写日记</span>
+						<span data-locale="en">How to write today</span>
+					</summary>
+					<p>
+						<span data-locale="zh">不用写完整文章。只写三个点：发生了什么，我怎么理解它，明天要试什么。</span>
+						<span data-locale="en">No need to write a complete essay. Just keep three points: what happened, how you understand it, and what to try tomorrow.</span>
+					</p>
 				</details>
 				<div class="mood-board surface">
 					<div class="mood-item">
-						<span>当前状态</span>
-						整理中
+						<span><span data-locale="zh">当前状态</span><span data-locale="en">Current state</span></span>
+						<span data-locale="zh">整理中</span><span data-locale="en">Organizing</span>
 					</div>
 					<div class="mood-item">
-						<span>下一步</span>
-						替换真实照片
+						<span><span data-locale="zh">下一步</span><span data-locale="en">Next step</span></span>
+						<span data-locale="zh">替换真实照片</span><span data-locale="en">Replace real photos</span>
 					</div>
 					<div class="mood-item">
-						<span>适合放入</span>
-						读书笔记、项目复盘
+						<span><span data-locale="zh">适合放入</span><span data-locale="en">Good for</span></span>
+						<span data-locale="zh">读书笔记、项目复盘</span><span data-locale="en">Reading notes, project reviews</span>
 					</div>
 					<div class="mood-item">
-						<span>写作节奏</span>
-						短一点也可以
+						<span><span data-locale="zh">写作节奏</span><span data-locale="en">Writing rhythm</span></span>
+						<span data-locale="zh">短一点也可以</span><span data-locale="en">Short is fine</span>
 					</div>
 				</div>
 			</section>
@@ -449,11 +528,11 @@ const categoryLabels = {
 
 		<script>
 			const prompts = [
-				'今天最值得留下来的一个细节是什么？',
-				'最近有什么问题反复出现，但还没有被认真记录？',
-				'如果把今天当成一个实验，结论会是什么？',
-				'哪一条笔记以后可能会救你十分钟？',
-				'现在最想整理的一团东西是什么？',
+				{ zh: '今天最值得留下来的一个细节是什么？', en: 'What detail from today is most worth keeping?' },
+				{ zh: '最近有什么问题反复出现，但还没有被认真记录？', en: 'What question keeps returning but has not been properly written down?' },
+				{ zh: '如果把今天当成一个实验，结论会是什么？', en: 'If today were an experiment, what would the conclusion be?' },
+				{ zh: '哪一条笔记以后可能会救你十分钟？', en: 'Which note might save you ten minutes later?' },
+				{ zh: '现在最想整理的一团东西是什么？', en: 'What messy thing do you most want to sort out right now?' },
 			];
 
 			const promptText = document.querySelector('#promptText');
@@ -462,7 +541,12 @@ const categoryLabels = {
 
 			promptButton?.addEventListener('click', () => {
 				promptIndex = (promptIndex + 1) % prompts.length;
-				if (promptText) promptText.textContent = prompts[promptIndex];
+				if (promptText) {
+					const zh = promptText.querySelector('[data-locale="zh"]');
+					const en = promptText.querySelector('[data-locale="en"]');
+					if (zh) zh.textContent = prompts[promptIndex].zh;
+					if (en) en.textContent = prompts[promptIndex].en;
+				}
 			});
 
 			const filterButtons = document.querySelectorAll('[data-filter]');

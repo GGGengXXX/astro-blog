@@ -4,8 +4,15 @@ const today = new Date();
 
 <footer>
 	<div class="footer-inner">
-		<p>&copy; {today.getFullYear()} GGGengXXX. Built with Astro and slow attention.</p>
-		<p>把零散的日常、笔记和实验先放进来，之后它会自己长出形状。</p>
+		<p>
+			&copy; {today.getFullYear()} GGGengXXX.
+			<span data-locale="zh">用 Astro 和缓慢的注意力搭起来。</span>
+			<span data-locale="en">Built with Astro and slow attention.</span>
+		</p>
+		<p>
+			<span data-locale="zh">把零散的日常、笔记和实验先放进来，之后它会自己长出形状。</span>
+			<span data-locale="en">Loose days, notes, and experiments can land here first; shape can arrive later.</span>
+		</p>
 	</div>
 	<div class="social-links">
 		<a href="https://github.com/GGGengXXX" target="_blank">
@@ -27,8 +34,8 @@ const today = new Date();
 <style>
 	footer {
 		padding: 3rem 1rem 5rem;
-		background: var(--ink);
-		color: rgba(250, 248, 241, 0.74);
+		background: var(--inverse);
+		color: var(--inverse-muted);
 		text-align: center;
 	}
 	.footer-inner {
@@ -46,9 +53,9 @@ const today = new Date();
 	}
 	.social-links a {
 		text-decoration: none;
-		color: rgba(250, 248, 241, 0.74);
+		color: var(--inverse-muted);
 	}
 	.social-links a:hover {
-		color: var(--paper);
+		color: var(--inverse-text);
 	}
 </style>

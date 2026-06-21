@@ -23,7 +23,7 @@ import { SITE_TITLE } from '../consts';
 
 			.about-main p {
 				max-width: 720px;
-				color: #3f3b34;
+				color: var(--panel-text);
 				font-size: 1.08rem;
 			}
 
@@ -39,16 +39,16 @@ import { SITE_TITLE } from '../consts';
 				padding: 1rem;
 				border: 1px solid var(--line);
 				border-radius: 6px;
-				background: rgba(250, 248, 241, 0.58);
+				background: var(--panel);
 			}
 
 			.about-side {
-				background: var(--ink);
-				color: var(--paper);
+				background: var(--inverse);
+				color: var(--inverse-text);
 			}
 
 			.about-side p {
-				color: rgba(250, 248, 241, 0.68);
+				color: var(--inverse-muted);
 			}
 
 			.stack {
@@ -59,7 +59,7 @@ import { SITE_TITLE } from '../consts';
 
 			.stack span {
 				padding: 0.75rem 0.85rem;
-				border: 1px solid rgba(250, 248, 241, 0.18);
+				border: 1px solid var(--line);
 				border-radius: 6px;
 			}
 
@@ -76,24 +76,29 @@ import { SITE_TITLE } from '../consts';
 			<section class="about-wrap">
 				<div class="about-main surface">
 					<div class="eyebrow">About</div>
-					<h1>关于这个地方</h1>
+					<h1><span data-locale="zh">关于这个地方</span><span data-locale="en">About this place</span></h1>
 					<p>
-						这是 GGGengXXX 的个人记录空间。它可以同时放技术笔记、日记、读书摘录、项目复盘和还没想清楚的念头。
+						<span data-locale="zh">这是 GGGengXXX 的个人记录空间。它可以同时放技术笔记、日记、读书摘录、项目复盘和还没想清楚的念头。</span>
+						<span data-locale="en">This is GGGengXXX's personal record space. It can hold technical notes, diary entries, reading excerpts, project reviews, and thoughts that are not clear yet.</span>
 					</p>
 					<p>
-						我把它设计成“个人花园”而不是正式出版物：内容可以先粗糙地存在，之后再慢慢修剪。能持续留下来，比一开始就漂亮完整更重要。
+						<span data-locale="zh">我把它设计成“个人花园”而不是正式出版物：内容可以先粗糙地存在，之后再慢慢修剪。能持续留下来，比一开始就漂亮完整更重要。</span>
+						<span data-locale="en">It is designed as a personal garden rather than a formal publication: rough things can exist first and be trimmed later. Staying alive matters more than being perfect at the start.</span>
 					</p>
 					<ul class="about-list">
-						<li><strong>笔记</strong><br />保存命令、配置、读到的概念和操作清单。</li>
-						<li><strong>日记</strong><br />记录当天发生了什么，以及当时的判断和状态。</li>
-						<li><strong>想法</strong><br />还没有成熟，但值得以后回看的问题、假设和灵感。</li>
+						<li><strong><span data-locale="zh">笔记</span><span data-locale="en">Notes</span></strong><br /><span data-locale="zh">保存命令、配置、读到的概念和操作清单。</span><span data-locale="en">Save commands, configuration, concepts, and checklists.</span></li>
+						<li><strong><span data-locale="zh">日记</span><span data-locale="en">Diary</span></strong><br /><span data-locale="zh">记录当天发生了什么，以及当时的判断和状态。</span><span data-locale="en">Record what happened that day, along with the judgment and state at the time.</span></li>
+						<li><strong><span data-locale="zh">想法</span><span data-locale="en">Ideas</span></strong><br /><span data-locale="zh">还没有成熟，但值得以后回看的问题、假设和灵感。</span><span data-locale="en">Keep questions, hypotheses, and sparks that are not mature yet but may be useful later.</span></li>
 					</ul>
 				</div>
 
 				<aside class="about-side surface">
 					<div class="eyebrow">Stack</div>
-					<h2>站点结构</h2>
-					<p>Astro 负责生成静态页面，GitHub Actions 负责自动部署，Markdown/MDX 负责写作。</p>
+					<h2><span data-locale="zh">站点结构</span><span data-locale="en">Site structure</span></h2>
+					<p>
+						<span data-locale="zh">Astro 负责生成静态页面，GitHub Actions 负责自动部署，Markdown/MDX 负责写作。</span>
+						<span data-locale="en">Astro generates the static pages, GitHub Actions handles deployment, and Markdown/MDX keeps writing simple.</span>
+					</p>
 					<div class="stack">
 						<span>Astro</span>
 						<span>Markdown + MDX</span>

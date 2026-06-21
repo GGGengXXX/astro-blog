@@ -6,14 +6,46 @@ import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
 
-type Props = CollectionEntry<'blog'>['data'];
+type Props = CollectionEntry<'blog'>['data'] & { entryId: string };
 
-const { title, description, pubDate, updatedDate, heroImage, category, mood, tags } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, category, mood, tags, entryId } = Astro.props;
 const categoryLabels = {
-	note: '笔记',
-	diary: '日记',
-	idea: '想法',
-	essay: '文章',
+	note: { zh: '笔记', en: 'Notes' },
+	diary: { zh: '日记', en: 'Diary' },
+	idea: { zh: '想法', en: 'Ideas' },
+	essay: { zh: '文章', en: 'Essays' },
+};
+const postText = {
+	'first-post': {
+		title: 'Today I set up the blog first',
+		description: 'An opening diary: build the container first, then let real life move in.',
+		mood: 'Starting',
+		tags: ['Diary', 'Blog', 'Start'],
+	},
+	'second-post': {
+		title: 'Astro blog maintenance checklist',
+		description: 'A future note for adding posts, editing the homepage, deploying, and debugging.',
+		mood: 'Clear',
+		tags: ['Astro', 'GitHub Pages', 'Notes'],
+	},
+	'third-post': {
+		title: 'Idea: write diary entries like experiments',
+		description: 'A diary can record hypotheses, observations, and the next small test.',
+		mood: 'Curious',
+		tags: ['Writing', 'Method', 'Idea'],
+	},
+	'markdown-style-guide': {
+		title: 'Markdown writing style notes',
+		description: 'A short memo for common Markdown patterns used in this blog.',
+		mood: 'Organizing',
+		tags: ['Markdown', 'Writing'],
+	},
+	'using-mdx': {
+		title: 'What MDX can be used for',
+		description: 'Put small interactive pieces inside posts so the blog is more than static text.',
+		mood: 'Experiment',
+		tags: ['MDX', 'Interactive', 'Astro'],
+	},
 };
 ---
 
@@ -42,7 +74,7 @@ const categoryLabels = {
 				width: min(760px, 100%);
 				margin: -3rem auto 0;
 				padding: clamp(1.2rem, 3vw, 2.2rem);
-				color: #302d27;
+				color: var(--panel-text);
 				position: relative;
 			}
 			.title {
@@ -87,17 +119,17 @@ const categoryLabels = {
 							{
 								updatedDate && (
 									<div class="last-updated-on">
-										Last updated on <FormattedDate date={updatedDate} />
+										<span data-locale="zh">更新于</span><span data-locale="en">Last updated on</span> <FormattedDate date={updatedDate} />
 									</div>
 								)
 							}
 						</div>
-						<h1>{title}</h1>
-						<p>{description}</p>
+						<h1><span data-locale="zh">{title}</span><span data-locale="en">{postText[entryId]?.title ?? title}</span></h1>
+						<p><span data-locale="zh">{description}</span><span data-locale="en">{postText[entryId]?.description ?? description}</span></p>
 						<div class="meta-line">
-							<span class="pill">{categoryLabels[category]}</span>
-							{mood && <span class="pill">{mood}</span>}
-							{tags.map((tag) => <span class="pill">{tag}</span>)}
+							<span class="pill"><span data-locale="zh">{categoryLabels[category].zh}</span><span data-locale="en">{categoryLabels[category].en}</span></span>
+							{mood && <span class="pill"><span data-locale="zh">{mood}</span><span data-locale="en">{postText[entryId]?.mood ?? mood}</span></span>}
+							{tags.map((tag, index) => <span class="pill"><span data-locale="zh">{tag}</span><span data-locale="en">{postText[entryId]?.tags?.[index] ?? tag}</span></span>)}
 						</div>
 					</div>
 					<slot />
