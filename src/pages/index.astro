@@ -1,32 +1,487 @@
 ---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
+import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+const featured = posts.find((post) => post.data.featured) ?? posts[0];
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const categoryLabels = {
+	all: '全部',
+	note: '笔记',
+	diary: '日记',
+	idea: '想法',
+	essay: '文章',
+};
 ---
 
 <!doctype html>
 <html lang="zh-CN">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<style>
+			.hero {
+				display: grid;
+				grid-template-columns: minmax(0, 1.16fr) minmax(320px, 0.84fr);
+				gap: 1rem;
+				align-items: stretch;
+				min-height: 560px;
+			}
+
+			.hero-copy,
+			.control-panel {
+				padding: clamp(1.3rem, 3vw, 2rem);
+			}
+
+			.hero-copy {
+				display: flex;
+				flex-direction: column;
+				justify-content: space-between;
+				background:
+					linear-gradient(135deg, rgba(250, 248, 241, 0.92), rgba(239, 232, 213, 0.78)),
+					linear-gradient(90deg, rgba(201, 52, 47, 0.1), transparent);
+				border: 1px solid var(--line);
+				border-radius: 8px;
+				box-shadow: var(--shadow);
+			}
+
+			.hero h1 {
+				max-width: 8.6ch;
+				margin-bottom: 1.2rem;
+			}
+
+			.hero-lead {
+				max-width: 690px;
+				color: #34312b;
+				font-size: clamp(1.05rem, 2vw, 1.35rem);
+			}
+
+			.hero-meta {
+				display: grid;
+				grid-template-columns: repeat(3, 1fr);
+				gap: 0.7rem;
+				margin-top: 2rem;
+			}
+
+			.metric {
+				padding: 0.9rem;
+				border: 1px solid var(--line);
+				border-radius: 6px;
+				background: rgba(250, 248, 241, 0.66);
+			}
+
+			.metric strong {
+				display: block;
+				font-size: 1.65rem;
+				line-height: 1;
+			}
+
+			.metric span {
+				color: var(--muted);
+				font-size: 0.82rem;
+			}
+
+			.control-panel {
+				display: flex;
+				flex-direction: column;
+				justify-content: space-between;
+				background: var(--ink);
+				border-radius: 8px;
+				color: var(--paper);
+				box-shadow: var(--shadow);
+			}
+
+			.panel-kicker {
+				color: rgba(250, 248, 241, 0.56);
+				font-size: 0.78rem;
+				font-weight: 700;
+				letter-spacing: 0.14em;
+				text-transform: uppercase;
+			}
+
+			.prompt {
+				margin: 1.5rem 0;
+				color: var(--paper);
+				font-size: clamp(1.35rem, 3vw, 2.25rem);
+				line-height: 1.12;
+			}
+
+			.prompt-button {
+				width: 100%;
+				padding: 0.9rem 1rem;
+				border: 1px solid rgba(250, 248, 241, 0.22);
+				border-radius: 6px;
+				background: var(--red);
+				color: white;
+				cursor: pointer;
+				font: inherit;
+				transition:
+					transform 0.2s ease,
+					background 0.2s ease;
+			}
+
+			.prompt-button:hover {
+				background: #e04a44;
+				transform: translateY(-2px);
+			}
+
+			.featured {
+				display: grid;
+				grid-template-columns: 0.75fr 1.25fr;
+				gap: 1rem;
+				margin-top: 1rem;
+				overflow: hidden;
+			}
+
+			.featured-image img {
+				width: 100%;
+				height: 100%;
+				min-height: 320px;
+				object-fit: cover;
+				border-radius: 8px 0 0 8px;
+			}
+
+			.featured-body {
+				padding: clamp(1.2rem, 3vw, 2rem);
+			}
+
+			.featured h2 {
+				font-size: clamp(2rem, 4vw, 4.4rem);
+			}
+
+			.filters {
+				position: sticky;
+				top: 69px;
+				z-index: 6;
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.5rem;
+				margin: 1rem 0;
+				padding: 0.7rem;
+				background: rgba(250, 248, 241, 0.82);
+				border: 1px solid var(--line);
+				border-radius: 8px;
+				backdrop-filter: blur(16px);
+			}
+
+			.filter-button {
+				padding: 0.55rem 0.86rem;
+				border: 1px solid var(--line);
+				border-radius: 999px;
+				background: transparent;
+				color: var(--ink);
+				cursor: pointer;
+				font: inherit;
+				font-size: 0.9rem;
+			}
+
+			.filter-button[aria-pressed='true'] {
+				background: var(--ink);
+				color: var(--paper);
+			}
+
+			.garden-grid {
+				display: grid;
+				grid-template-columns: repeat(12, 1fr);
+				gap: 1rem;
+			}
+
+			.entry-card {
+				grid-column: span 4;
+				display: flex;
+				flex-direction: column;
+				min-height: 280px;
+				padding: 1rem;
+				text-decoration: none;
+				transition:
+					transform 0.2s ease,
+					box-shadow 0.2s ease,
+					border-color 0.2s ease;
+			}
+
+			.entry-card:hover {
+				transform: translateY(-4px);
+				border-color: rgba(201, 52, 47, 0.42);
+				box-shadow: var(--shadow);
+			}
+
+			.entry-card.is-hidden {
+				display: none;
+			}
+
+			.entry-top {
+				display: flex;
+				justify-content: space-between;
+				gap: 1rem;
+				margin-bottom: 1rem;
+				color: var(--muted);
+				font-size: 0.86rem;
+			}
+
+			.entry-card h3 {
+				margin-bottom: 0.8rem;
+				color: var(--ink);
+			}
+
+			.entry-card p {
+				color: #45423a;
+			}
+
+			.entry-card .tag-row {
+				margin-top: auto;
+			}
+
+			.diary-strip {
+				display: grid;
+				grid-template-columns: 0.85fr 1.15fr;
+				gap: 1rem;
+				margin-top: 1rem;
+			}
+
+			.diary-card {
+				padding: 1.25rem;
+			}
+
+			.diary-card summary {
+				cursor: pointer;
+				color: var(--red);
+				font-weight: 700;
+			}
+
+			.mood-board {
+				display: grid;
+				grid-template-columns: repeat(2, 1fr);
+				gap: 0.7rem;
+				padding: 1.25rem;
+				background: var(--ink);
+				color: var(--paper);
+			}
+
+			.mood-item {
+				padding: 0.8rem;
+				border: 1px solid rgba(250, 248, 241, 0.16);
+				border-radius: 6px;
+			}
+
+			.mood-item span {
+				display: block;
+				color: rgba(250, 248, 241, 0.58);
+				font-size: 0.78rem;
+			}
+
+			@media (max-width: 920px) {
+				.hero,
+				.featured,
+				.diary-strip {
+					grid-template-columns: 1fr;
+				}
+
+				.featured-image img {
+					border-radius: 8px 8px 0 0;
+				}
+
+				.entry-card {
+					grid-column: span 6;
+				}
+			}
+
+			@media (max-width: 640px) {
+				.hero {
+					min-height: auto;
+				}
+
+				.hero-copy,
+				.control-panel {
+					padding: 1rem;
+				}
+
+				.hero h1 {
+					font-size: 3.1rem;
+				}
+
+				.hero-meta,
+				.mood-board {
+					grid-template-columns: 1fr;
+				}
+
+				.entry-card {
+					grid-column: 1 / -1;
+				}
+
+				.filters {
+					top: 59px;
+				}
+			}
+		</style>
 	</head>
 	<body>
 		<Header />
 		<main>
-			<h1>GGGengXXX Blog</h1>
-			<p>
-				一个基于 <a href="https://astro.build/">Astro</a> 的个人博客，用来记录想法、技术笔记和正在进行的实验。
-			</p>
-			<p>
-				你可以直接在 <code>src/content/blog/</code> 里新增 Markdown 或 MDX 文件来发布文章。
-			</p>
-			<p>下一步可以从这里开始：</p>
-			<ul>
-				<li>修改 <code>src/pages/about.astro</code>，写一版个人介绍</li>
-				<li>替换 <code>src/content/blog/</code> 里的示例文章</li>
-				<li>调整 <code>src/styles/global.css</code>，换成自己的视觉风格</li>
-			</ul>
+			<section class="hero">
+				<div class="hero-copy">
+					<div>
+						<div class="eyebrow">Personal Garden</div>
+						<h1>笔记、日记和想法的工作台</h1>
+						<p class="hero-lead">
+							这里不是一个要一次写完的博客，而是一块可以持续整理的地方。短笔记先放下，日记先留下，想法先不用急着成熟。
+						</p>
+					</div>
+					<div class="hero-meta">
+						<div class="metric">
+							<strong>{posts.length}</strong>
+							<span>篇记录</span>
+						</div>
+						<div class="metric">
+							<strong>{posts.filter((post) => post.data.category === 'diary').length}</strong>
+							<span>篇日记</span>
+						</div>
+						<div class="metric">
+							<strong>{new Set(posts.flatMap((post) => post.data.tags)).size}</strong>
+							<span>个标签</span>
+						</div>
+					</div>
+				</div>
+
+				<aside class="control-panel">
+					<div>
+						<div class="panel-kicker">Today's Prompt</div>
+						<p class="prompt" id="promptText">今天最值得留下来的一个细节是什么？</p>
+					</div>
+					<button class="prompt-button" id="promptButton" type="button">换一个写作提示</button>
+				</aside>
+			</section>
+
+			{
+				featured && (
+					<section class="featured surface">
+						<div class="featured-image">
+							{featured.data.heroImage && (
+								<Image width={760} height={720} src={featured.data.heroImage} alt="" />
+							)}
+						</div>
+						<div class="featured-body">
+							<div class="eyebrow">Featured</div>
+							<h2>{featured.data.title}</h2>
+							<p>{featured.data.description}</p>
+							<div class="tag-row">
+								<span class="pill">{categoryLabels[featured.data.category]}</span>
+								{featured.data.mood && <span class="pill">{featured.data.mood}</span>}
+								<a class="pill" href={`${base}/blog/${featured.id}/`}>
+									打开这篇
+								</a>
+							</div>
+						</div>
+					</section>
+				)
+			}
+
+			<section aria-labelledby="garden-title">
+				<div class="filters" aria-label="内容筛选">
+					{
+						Object.entries(categoryLabels).map(([key, label]) => (
+							<button
+								class="filter-button"
+								type="button"
+								data-filter={key}
+								aria-pressed={key === 'all' ? 'true' : 'false'}
+							>
+								{label}
+							</button>
+						))
+					}
+				</div>
+
+				<div class="eyebrow">Recent Entries</div>
+				<h2 id="garden-title">最近放进来的东西</h2>
+				<div class="garden-grid" id="gardenGrid">
+					{
+						posts.map((post) => (
+							<a class="entry-card surface" data-category={post.data.category} href={`${base}/blog/${post.id}/`}>
+								<div class="entry-top">
+									<span>{categoryLabels[post.data.category]}</span>
+									<FormattedDate date={post.data.pubDate} />
+								</div>
+								<h3>{post.data.title}</h3>
+								<p>{post.data.description}</p>
+								<div class="tag-row">
+									{post.data.tags.slice(0, 3).map((tag) => (
+										<span class="pill">{tag}</span>
+									))}
+								</div>
+							</a>
+						))
+					}
+				</div>
+			</section>
+
+			<section class="diary-strip">
+				<details class="diary-card surface" open>
+					<summary>今天可以怎么写日记</summary>
+					<p>不用写完整文章。只写三个点：发生了什么，我怎么理解它，明天要试什么。</p>
+				</details>
+				<div class="mood-board surface">
+					<div class="mood-item">
+						<span>当前状态</span>
+						整理中
+					</div>
+					<div class="mood-item">
+						<span>下一步</span>
+						替换真实照片
+					</div>
+					<div class="mood-item">
+						<span>适合放入</span>
+						读书笔记、项目复盘
+					</div>
+					<div class="mood-item">
+						<span>写作节奏</span>
+						短一点也可以
+					</div>
+				</div>
+			</section>
 		</main>
 		<Footer />
+
+		<script>
+			const prompts = [
+				'今天最值得留下来的一个细节是什么？',
+				'最近有什么问题反复出现，但还没有被认真记录？',
+				'如果把今天当成一个实验，结论会是什么？',
+				'哪一条笔记以后可能会救你十分钟？',
+				'现在最想整理的一团东西是什么？',
+			];
+
+			const promptText = document.querySelector('#promptText');
+			const promptButton = document.querySelector('#promptButton');
+			let promptIndex = 0;
+
+			promptButton?.addEventListener('click', () => {
+				promptIndex = (promptIndex + 1) % prompts.length;
+				if (promptText) promptText.textContent = prompts[promptIndex];
+			});
+
+			const filterButtons = document.querySelectorAll('[data-filter]');
+			const cards = document.querySelectorAll('[data-category]');
+
+			filterButtons.forEach((button) => {
+				button.addEventListener('click', () => {
+					const filter = button.getAttribute('data-filter');
+
+					filterButtons.forEach((item) => {
+						item.setAttribute('aria-pressed', String(item === button));
+					});
+
+					cards.forEach((card) => {
+						const shouldShow = filter === 'all' || card.getAttribute('data-category') === filter;
+						card.classList.toggle('is-hidden', !shouldShow);
+					});
+				});
+			});
+		</script>
 	</body>
 </html>

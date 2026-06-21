@@ -1,5 +1,4 @@
 ---
-import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
@@ -11,78 +10,102 @@ const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const categoryLabels = {
+	note: '笔记',
+	diary: '日记',
+	idea: '想法',
+	essay: '文章',
+};
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<BaseHead title={`归档 | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
 		<style>
-			main {
-				width: 960px;
-			}
-			ul {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 2rem;
-				list-style-type: none;
-				margin: 0;
-				padding: 0;
-			}
-			ul li {
-				width: calc(50% - 1rem);
-			}
-			ul li * {
-				text-decoration: none;
-				transition: 0.2s ease;
-			}
-			ul li:first-child {
-				width: 100%;
+			.archive-head {
+				display: grid;
+				grid-template-columns: minmax(0, 1fr) 280px;
+				gap: 1rem;
 				margin-bottom: 1rem;
-				text-align: center;
 			}
-			ul li:first-child img {
-				width: 100%;
+
+			.archive-title {
+				padding: clamp(1.25rem, 3vw, 2rem);
 			}
-			ul li:first-child .title {
-				font-size: 2.369rem;
+
+			.archive-title p {
+				max-width: 680px;
+				color: var(--muted);
+				font-size: 1.08rem;
 			}
-			ul li img {
-				margin-bottom: 0.5rem;
-				border-radius: 12px;
+
+			.archive-stat {
+				display: flex;
+				flex-direction: column;
+				justify-content: end;
+				padding: 1.25rem;
+				background: var(--ink);
+				color: var(--paper);
 			}
-			ul li a {
-				display: block;
+
+			.archive-stat strong {
+				font-size: 4rem;
+				line-height: 0.95;
 			}
-			.title {
+
+			.timeline {
+				display: grid;
+				gap: 0.75rem;
+				margin-top: 1rem;
+			}
+
+			.archive-row {
+				display: grid;
+				grid-template-columns: 132px minmax(0, 1fr) auto;
+				gap: 1rem;
+				align-items: center;
+				padding: 1rem;
+				text-decoration: none;
+				transition:
+					transform 0.2s ease,
+					border-color 0.2s ease,
+					box-shadow 0.2s ease;
+			}
+
+			.archive-row:hover {
+				transform: translateX(4px);
+				border-color: rgba(201, 52, 47, 0.38);
+				box-shadow: var(--soft-shadow);
+			}
+
+			.archive-date {
+				color: var(--muted);
+				font-size: 0.88rem;
+			}
+
+			.archive-row h2 {
+				margin: 0 0 0.25rem;
+				color: var(--ink);
+				font-size: clamp(1.35rem, 3vw, 2.35rem);
+			}
+
+			.archive-row p {
 				margin: 0;
-				color: rgb(var(--black));
-				line-height: 1;
+				color: #48443b;
 			}
-			.date {
-				margin: 0;
-				color: rgb(var(--gray));
+
+			.archive-kind {
+				color: var(--red);
+				font-size: 0.86rem;
+				font-weight: 700;
+				white-space: nowrap;
 			}
-			ul li a:hover h4,
-			ul li a:hover .date {
-				color: rgb(var(--accent));
-			}
-			ul a:hover img {
-				box-shadow: var(--box-shadow);
-			}
-			@media (max-width: 720px) {
-				ul {
-					gap: 0.5em;
-				}
-				ul li {
-					width: 100%;
-					text-align: center;
-				}
-				ul li:first-child {
-					margin-bottom: 0;
-				}
-				ul li:first-child .title {
-					font-size: 1.563em;
+
+			@media (max-width: 760px) {
+				.archive-head,
+				.archive-row {
+					grid-template-columns: 1fr;
 				}
 			}
 		</style>
@@ -90,24 +113,38 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<body>
 		<Header />
 		<main>
-			<section>
-				<ul>
-					{
-						posts.map((post) => (
-							<li>
-								<a href={`${base}/blog/${post.id}/`}>
-									{post.data.heroImage && (
-										<Image width={720} height={360} src={post.data.heroImage} alt="" />
-									)}
-									<h4 class="title">{post.data.title}</h4>
-									<p class="date">
-										<FormattedDate date={post.data.pubDate} />
-									</p>
-								</a>
-							</li>
-						))
-					}
-				</ul>
+			<section class="archive-head">
+				<div class="archive-title surface">
+					<div class="eyebrow">Archive</div>
+					<h1>归档</h1>
+					<p>所有笔记、日记、想法和长一点的文章都会在这里排成时间线。它不需要一开始就完整，重要的是能持续加入。</p>
+				</div>
+				<div class="archive-stat surface">
+					<strong>{posts.length}</strong>
+					<span>entries saved</span>
+				</div>
+			</section>
+
+			<section class="timeline">
+				{
+					posts.map((post) => (
+						<a class="archive-row surface" href={`${base}/blog/${post.id}/`}>
+							<div class="archive-date">
+								<FormattedDate date={post.data.pubDate} />
+							</div>
+							<div>
+								<h2>{post.data.title}</h2>
+								<p>{post.data.description}</p>
+								<div class="tag-row">
+									{post.data.tags.map((tag) => (
+										<span class="pill">{tag}</span>
+									))}
+								</div>
+							</div>
+							<div class="archive-kind">{categoryLabels[post.data.category]}</div>
+						</a>
+					))
+				}
 			</section>
 		</main>
 		<Footer />

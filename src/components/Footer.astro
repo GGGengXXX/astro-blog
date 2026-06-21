@@ -3,7 +3,10 @@ const today = new Date();
 ---
 
 <footer>
-	&copy; {today.getFullYear()} GGGengXXX. All rights reserved.
+	<div class="footer-inner">
+		<p>&copy; {today.getFullYear()} GGGengXXX. Built with Astro and slow attention.</p>
+		<p>把零散的日常、笔记和实验先放进来，之后它会自己长出形状。</p>
+	</div>
 	<div class="social-links">
 		<a href="https://github.com/GGGengXXX" target="_blank">
 			<span class="sr-only">Go to GGGengXXX on GitHub</span>
@@ -23,10 +26,17 @@ const today = new Date();
 </footer>
 <style>
 	footer {
-		padding: 2em 1em 6em 1em;
-		background: linear-gradient(var(--gray-gradient)) no-repeat;
-		color: rgb(var(--gray));
+		padding: 3rem 1rem 5rem;
+		background: var(--ink);
+		color: rgba(250, 248, 241, 0.74);
 		text-align: center;
+	}
+	.footer-inner {
+		max-width: 760px;
+		margin: 0 auto;
+	}
+	.footer-inner p {
+		margin: 0.2rem 0;
 	}
 	.social-links {
 		display: flex;
@@ -36,9 +46,9 @@ const today = new Date();
 	}
 	.social-links a {
 		text-decoration: none;
-		color: rgb(var(--gray));
+		color: rgba(250, 248, 241, 0.74);
 	}
 	.social-links a:hover {
-		color: rgb(var(--gray-dark));
+		color: var(--paper);
 	}
 </style>

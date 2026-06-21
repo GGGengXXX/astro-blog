@@ -8,17 +8,23 @@ import Header from '../components/Header.astro';
 
 type Props = CollectionEntry<'blog'>['data'];
 
-const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, category, mood, tags } = Astro.props;
+const categoryLabels = {
+	note: '笔记',
+	diary: '日记',
+	idea: '想法',
+	essay: '文章',
+};
 ---
 
-<html lang="en">
+<html lang="zh-CN">
 	<head>
 		<BaseHead title={title} description={description} />
 		<style>
 			main {
-				width: calc(100% - 2em);
+				width: min(1120px, calc(100% - 2rem));
 				max-width: 100%;
-				margin: 0;
+				margin: auto;
 			}
 			.hero-image {
 				width: 100%;
@@ -26,31 +32,43 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 			.hero-image img {
 				display: block;
 				margin: 0 auto;
-				border-radius: 12px;
+				width: 100%;
+				max-height: 520px;
+				object-fit: cover;
+				border-radius: 8px;
 				box-shadow: var(--box-shadow);
 			}
 			.prose {
-				width: 720px;
-				max-width: calc(100% - 2em);
-				margin: auto;
-				padding: 1em;
-				color: rgb(var(--gray-dark));
+				width: min(760px, 100%);
+				margin: -3rem auto 0;
+				padding: clamp(1.2rem, 3vw, 2.2rem);
+				color: #302d27;
+				position: relative;
 			}
 			.title {
-				margin-bottom: 1em;
-				padding: 1em 0;
-				text-align: center;
-				line-height: 1;
+				margin-bottom: 1.4em;
+				text-align: left;
 			}
 			.title h1 {
-				margin: 0 0 0.5em 0;
+				margin: 0 0 0.45em;
+				font-size: clamp(2.7rem, 7vw, 5.6rem);
 			}
 			.date {
-				margin-bottom: 0.5em;
-				color: rgb(var(--gray));
+				margin-bottom: 1rem;
+				color: var(--muted);
 			}
 			.last-updated-on {
 				font-style: italic;
+			}
+			.meta-line {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.45rem;
+				margin-bottom: 1.25rem;
+			}
+			.prose :global(h2) {
+				margin-top: 2rem;
+				font-size: 2rem;
 			}
 		</style>
 	</head>
@@ -62,7 +80,7 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				<div class="hero-image">
 					{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
 				</div>
-				<div class="prose">
+				<div class="prose surface">
 					<div class="title">
 						<div class="date">
 							<FormattedDate date={pubDate} />
@@ -75,7 +93,12 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 							}
 						</div>
 						<h1>{title}</h1>
-						<hr />
+						<p>{description}</p>
+						<div class="meta-line">
+							<span class="pill">{categoryLabels[category]}</span>
+							{mood && <span class="pill">{mood}</span>}
+							{tags.map((tag) => <span class="pill">{tag}</span>)}
+						</div>
 					</div>
 					<slot />
 				</div>
