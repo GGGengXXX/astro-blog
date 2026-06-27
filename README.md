@@ -4,6 +4,14 @@ Astro-powered personal blog deployed with GitHub Pages.
 
 Live site: https://gggengxxx.github.io/astro-blog/
 
+## New Post
+
+```sh
+npm run new:post
+```
+
+This opens an interactive prompt that fills in the frontmatter for a new Markdown post.
+
 Features:
 
 - ✅ Minimal styling (make it your own!)
