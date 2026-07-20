@@ -1,3 +1,5 @@
+@import 'katex/dist/katex.min.css';
+
 :root {
 	--paper: #faf8f1;
 	--paper-deep: #efe8d5;
