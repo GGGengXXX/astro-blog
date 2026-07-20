@@ -9,106 +9,76 @@ tags: ['WAM', 'DreamZero', 'FastWAM', 'paper-reading']
 featured: false
 ---
 
-这篇笔记整理自我对 WAM 相关内容的阅读，主要是 DreamZero、World Action Models: A Survey 和 FastWAM。
+## World Action Models are Zero-shot Policies
 
-我更想把它写成一份“读后梳理”，而不是论文复述。重点不是每个符号怎么推出来，而是这条路线到底在解决什么问题，以及它为什么会走到今天这一步。
+问题在于
 
-## WAM 在做什么
+- 怎么对齐输出的视频和动作呢？
+  - 去噪的时候同时得到 video和action，
+  - $[x_{action},x_{video}]$ concat 在一起denoise出来
+- 关于模型架构设计，是 bidirectional 好还是autoregressive好？
+  - 使用了自回归的架构，然后一个action chunk执行完毕之后，kv cache中，使用真实的观察替换predict的kv
+- diffusion有去噪的过程，如何做到实时性
 
-传统的 VLA 更像是在做“根据当前观测和文本直接预测动作”。WAM 的思路更进一步：先让模型去想象未来，再从未来里把动作学出来。
+实际上等价于一个视频生成模型 + 一个逆向动力学模型
 
-这意味着模型不只是学一个动作映射，而是在学一种“未来世界表征”。这个表征可以是未来的视频，也可以是别的中间状态，但核心都是同一件事：
+![image-20260720003445793](../../assets/blog/wam/dreamzero/equation.png)
 
-- 让模型对未来有更强的结构化理解
-- 再利用这种未来理解去生成动作
-- 尽量把动作和世界模型对齐
+img同时作为了条件和监督的目标
 
-## DreamZero 的直觉
+视频和动作共享一个 t
 
-DreamZero 给我的第一感觉是：它本质上像一个“视频生成模型 + 逆向动力学模型”的联合体。
+就模型的架构来说感觉不复杂。实际上是denoise的时候把视频和动作concat在一起了，两者使用相同的timestep；
 
-![DreamZero equation](../../assets/blog/wam/dreamzero/equation.png)
+机器人的状态 + 文本条件作为条件；其中state是拼接到 `x` 上的，但是不 attend 任何key和value，也不加噪，不解码，只是拼接在token序列中作为一个 **只读的条件**
 
-它的关键做法很直接：把未来视频和未来动作拼在一起，一起加噪、一起去噪。也就是说，视频 token 和 action token 共享同一个 timestep，模型在训练时同时学习两者的联合分布。
+论文后面相当大的一部分在介绍怎么提升速度，如何异步地同时进行 推理 + 动作执行
 
-这部分可以直接写成：
+一个有趣的加速方法是，观察到时间步一样的话，模型在video模糊的时候生成的动作也不可靠
 
-$$
-[x_{action}, x_{video}]
-$$
+但是少步生成的时候，我们需要模型对于不清晰的视频，也能预测清晰的动作
 
-在去噪时一起更新，视频和动作共享同一个 $t$。
+训练模型对video和action加上不同程度的噪声，构造<视频模糊，动作清晰>的训练对；让模型学会——视频模糊的时候也能生成正确的动作
 
-这件事的好处是，视频和动作天然对齐，模型不会只会“想象画面”，却不知道该做什么动作。
+代码：https://github.com/dreamzero0/dreamzero
 
-但问题也很快出现了：
+## World Action Models: A Survey
 
-- 视频维度比动作大得多，联合去噪会很慢
-- 少步生成时，视频如果还糊，动作也容易跟着不稳
-- 真正做闭环控制时，实时性很难满足
+## FastWAM
 
-于是 DreamZero 后面就出现了一个很有意思的补丁：训练模型去适应“视频模糊、动作相对清晰”的情况。这样一来，即使未来画面还不够清楚，动作也尽量能先学稳。
+现有的范式：
 
-我对这部分的理解是，DreamZero 在尝试把“世界预测”和“动作预测”绑在一起，但它也暴露了一个事实：真正执行时，动作比画面更重要，速度比完整想象更重要。
+- 联合生成 未来预测+动作序列，例如上面的 DreamZero
+  - 这么做的优点是视频和动作对齐的好
+  - 缺点在于比较慢，视频的维度比动作要高，其噪声可能会污染动作
+- 先生成对未来的观测，然后使用IDM，基于未来观测解码出未来的动作
+  - 串行执行，延迟高
+  - 未来预测 visible
 
-## FastWAM 的方向
-
-FastWAM 的思路更像是对前面路线的一次工程化收缩。
-
-它保留了“世界模型辅助动作学习”这个训练信号，但在 inference 的时候，只保留动作生成，不再让视频分支拖慢整个链路。
-
-![FastWAM mask](../../assets/blog/wam/fastwam/mask.png)
-
-FastWAM 的一个核心结构是把 `video` 和 `action` 分成两个分支，先各自过 `pre-DiT`，再在 `MoT` 里做联合 attention，之后再拆开继续各自的 `post-DiT`。
-
-我觉得最值得记住的是它的 mask 设计：
-
-- video 只能看自己
-- action 可以看首帧和 action 序列
-- inference 时，video 分支可以只跑一遍并缓存
-- action 分支并不需要依赖完整的视频生成过程
-
-这就把训练和推理分开了。
-
-训练时，用 world modeling 当协同信号，逼动作学习和未来世界保持一致。
-推理时，只保留最直接的动作路径，尽量减少视频预测带来的时间损耗。
-
-它最后的推理目标可以写成：
-
+在 train 的时候，把 world modeling 作为一种 协同训练的信号；在inference的时候，只生成动作
 $$
 p_{\theta}(a_{1:H}|o,l)
 $$
+使用 `Wan 2.2 5B`  action expert 参数量为 `1B` 
 
-也就是说，inference 的时候只生成动作序列。
+## 代码中的实现
 
-## 我自己的理解
+`video` 和 `action` 作为两个分支，分别先过 `pre_dit` 然后过一个 `mot` ; 在 `mot` 中 `video` 和 `action`  会做联合的 `attention` 
 
-这条路线给我的感觉是：
+具体的mask 是这样的
 
-1. 训练阶段尽量把“未来”和“动作”绑紧一点
-2. 推理阶段尽量把“未来视频”从动作里剥离出去
-3. 真正要闭环控制时，动作质量和速度比画面完整更重要
+![image-20260720211506284](../../assets/blog/wam/fastwam/mask.png)
 
-所以 WAM 不是单纯“生成视频”，也不是单纯“预测动作”，而是在尝试把世界建模变成动作策略的一部分。
+左边是 `query` 上面的是 `key` 
 
-如果继续往下读，我接下来最想搞清楚的是两件事：
+生成的 `video` 只能对自己做 `bidirectional` 的 attention；
 
-- 这些方法在真实机器人任务上，究竟是哪些场景最吃香
-- 当 action 质量和 video 质量冲突时，模型到底是怎么平衡的
+`action` 可以 `attend` 到 首帧 $f_0$ 和 对 action 序列做 `bidirectional` 的attention
+
+过完 `mot` 之后 `action` 和 `video` 分开， 再来一个 `post-dit` 
+
+**inference**
+
+Video 那一支 `dit` 就只走一个pass，然后存kv cache；action dit只依赖首帧；因为在 `mot` 中，action的query只会attend**首帧**和**action序列** 所以对action的生成没有影响
 
 ## GigaWorld-Policy
-
-这一节我先留一个位置，后面会继续补。
-
-## 后续会补的内容
-
-- GigaWorld-Policy 的核心思路
-- 它和 DreamZero、FastWAM 的关系
-- 这些方法在真实任务里的取舍
-
-## 参考
-
-- DreamZero
-- World Action Models: A Survey
-- FastWAM
-- 代码：<https://github.com/dreamzero0/dreamzero>
