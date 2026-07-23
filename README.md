@@ -2,7 +2,7 @@
 
 Astro-powered personal blog deployed with GitHub Pages.
 
-Live site: https://gggengxxx.github.io/astro-blog/
+Live site: https://gggengxxx.github.io/blog/
 
 ## New Post
 
